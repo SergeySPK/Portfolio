@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Шаманиди Сергей — Python-разработчик</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@300;400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #050810;
+    --surface:  #0c1120;
+    --card:     #111827;
+    --accent:   #4F8EF7;
+    --accent2:  #7C3AED;
+    --glow:     rgba(79,142,247,0.18);
+    --text:     #E8EEF8;
+    --muted:    #6B7A9A;
+    --border:   rgba(79,142,247,0.15);
+    --mono:     'Space Mono', monospace;
+    --head:     'Unbounded', sans-serif;
+    --body:     'Inter', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── Grid noise texture ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 10% 0%, rgba(79,142,247,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 100%, rgba(124,58,237,0.07) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 6vw;
+    background: rgba(5,8,16,0.85);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono); font-size: 13px; color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a {
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase;
+    transition: color .25s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 120px 6vw 80px;
+    position: relative;
+  }
+  .hero-tag {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 20px; opacity: 0;
+    animation: fadeUp .7s .2s forwards;
+  }
+  .hero-name {
+    font-family: var(--head); font-size: clamp(44px, 8vw, 96px);
+    font-weight: 900; line-height: 1.0;
+    background: linear-gradient(135deg, #E8EEF8 0%, #4F8EF7 50%, #7C3AED 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0; animation: fadeUp .7s .4s forwards;
+  }
+  .hero-role {
+    font-family: var(--mono); font-size: clamp(14px, 2vw, 20px);
+    color: var(--muted); margin-top: 16px;
+    opacity: 0; animation: fadeUp .7s .6s forwards;
+  }
+  .hero-desc {
+    max-width: 560px; margin-top: 28px; font-size: 16px; color: #9AABCC;
+    opacity: 0; animation: fadeUp .7s .8s forwards;
+  }
+  .hero-cta {
+    display: flex; gap: 16px; margin-top: 44px; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp .7s 1s forwards;
+  }
+  .btn {
+    padding: 14px 32px; border-radius: 4px;
+    font-family: var(--mono); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.06em; cursor: pointer; text-decoration: none;
+    transition: all .25s; display: inline-block;
+  }
+  .btn-primary {
+    background: var(--accent); color: #050810;
+    border: 2px solid var(--accent);
+  }
+  .btn-primary:hover {
+    background: transparent; color: var(--accent);
+    box-shadow: 0 0 24px rgba(79,142,247,0.4);
+  }
+  .btn-ghost {
+    background: transparent; color: var(--text);
+    border: 2px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .hero-scroll {
+    position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    letter-spacing: 0.15em; opacity: 0;
+    animation: fadeIn 1s 1.4s forwards;
+  }
+  .scroll-line {
+    width: 1px; height: 48px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    animation: pulse 2s infinite;
+  }
+
+  /* ── SECTION COMMON ── */
+  section { position: relative; padding: 100px 6vw; }
+  .section-label {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: var(--head); font-size: clamp(26px, 4vw, 48px);
+    font-weight: 700; margin-bottom: 48px;
+  }
+
+  /* ── BEHANCE ANALYSIS ── */
+  #analysis { background: var(--surface); }
+  .analysis-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  .analysis-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 28px;
+    transition: border-color .3s, transform .3s;
+  }
+  .analysis-card:hover {
+    border-color: var(--accent); transform: translateY(-4px);
+  }
+  .card-num {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 0.15em; margin-bottom: 10px;
+  }
+  .card-title {
+    font-family: var(--head); font-size: 15px; font-weight: 700;
+    margin-bottom: 6px; color: var(--text);
+  }
+  .card-author {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .card-link {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    text-decoration: none; word-break: break-all;
+    display: block; margin-bottom: 18px;
+  }
+  .card-link:hover { text-decoration: underline; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .tag {
+    padding: 4px 10px; border-radius: 99px; font-size: 11px;
+    font-family: var(--mono); background: rgba(79,142,247,0.1);
+    color: var(--accent); border: 1px solid rgba(79,142,247,0.2);
+  }
+  .card-body { font-size: 14px; color: #9AABCC; line-height: 1.65; }
+  .card-body li { margin-bottom: 6px; padding-left: 12px; position: relative; }
+  .card-body li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+
+  /* ── PROJECTS ── */
+  #projects { background: var(--bg); }
+  .projects-list { display: flex; flex-direction: column; gap: 40px; }
+  .project-card {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+    transition: border-color .3s, box-shadow .3s;
+  }
+  .project-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 40px rgba(79,142,247,0.1);
+  }
+  .project-card:nth-child(even) { direction: rtl; }
+  .project-card:nth-child(even) > * { direction: ltr; }
+  .proj-visual {
+    background: var(--surface);
+    min-height: 300px; display: flex; align-items: center; justify-content: center;
+    padding: 40px; position: relative; overflow: hidden;
+  }
+  .proj-visual::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at center, var(--glow) 0%, transparent 70%);
+  }
+  .proj-icon {
+    font-size: 72px; position: relative; z-index: 1;
+    filter: drop-shadow(0 0 20px rgba(79,142,247,0.5));
+  }
+  .proj-info { background: var(--card); padding: 48px 40px; }
+  .proj-num {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    letter-spacing: 0.15em; margin-bottom: 12px;
+  }
+  .proj-title {
+    font-family: var(--head); font-size: 22px; font-weight: 700;
+    margin-bottom: 20px; color: var(--text);
+  }
+  .proj-kpi {
+    display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;
+  }
+  .kpi {
+    display: flex; flex-direction: column; align-items: flex-start;
+    background: rgba(79,142,247,0.07); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px; min-width: 100px;
+  }
+  .kpi-val {
+    font-family: var(--head); font-size: 20px; font-weight: 700; color: var(--accent);
+  }
+  .kpi-label { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .proj-section { margin-bottom: 18px; }
+  .proj-section-label {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .proj-section-text { font-size: 14px; color: #9AABCC; line-height: 1.65; }
+  .proj-stack { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .stack-badge {
+    padding: 5px 12px; border-radius: 4px; font-family: var(--mono);
+    font-size: 11px; background: rgba(124,58,237,0.12);
+    color: #A78BFA; border: 1px solid rgba(124,58,237,0.25);
+  }
+  .proj-insight {
+    margin-top: 20px; padding: 14px 18px;
+    border-left: 3px solid var(--accent);
+    background: rgba(79,142,247,0.06); border-radius: 0 8px 8px 0;
+    font-size: 13px; color: #8BA4D0; font-style: italic;
+  }
+
+  /* ── INTERACTIVE ── */
+  #interactive { background: var(--surface); }
+  .interactive-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+  .inter-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 32px;
+    transition: border-color .3s, transform .3s;
+  }
+  .inter-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+  .inter-icon { font-size: 36px; margin-bottom: 16px; }
+  .inter-title {
+    font-family: var(--head); font-size: 17px; font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .inter-desc { font-size: 14px; color: #9AABCC; margin-bottom: 20px; line-height: 1.6; }
+  .inter-action {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    text-decoration: none; letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(79,142,247,0.3); padding-bottom: 2px;
+    transition: border-color .2s;
+  }
+  .inter-action:hover { border-color: var(--accent); }
+
+  /* quiz styles */
+  .quiz-q { font-size: 15px; font-weight: 500; margin-bottom: 12px; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .quiz-opt {
+    padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border);
+    cursor: pointer; font-size: 13px; transition: all .2s; background: transparent;
+    color: var(--text); text-align: left;
+  }
+  .quiz-opt:hover, .quiz-opt.selected { border-color: var(--accent); background: rgba(79,142,247,0.1); color: var(--accent); }
+  .quiz-result {
+    display: none; padding: 16px; background: rgba(79,142,247,0.08);
+    border: 1px solid var(--accent); border-radius: 8px;
+    font-size: 14px; color: var(--text); line-height: 1.6;
+  }
+  .quiz-btn {
+    padding: 10px 24px; background: var(--accent); color: #050810;
+    border: none; border-radius: 4px; font-family: var(--mono);
+    font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity .2s;
+  }
+  .quiz-btn:hover { opacity: .85; }
+
+  /* checklist */
+  .cl-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid rgba(79,142,247,0.08);
+    font-size: 14px; color: #9AABCC; cursor: pointer;
+    transition: color .2s;
+  }
+  .cl-item:last-child { border-bottom: none; }
+  .cl-item.done { color: var(--accent); text-decoration: line-through; }
+  .cl-box {
+    width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+    border: 2px solid var(--muted); display: flex; align-items: center; justify-content: center;
+    font-size: 11px; transition: all .2s; margin-top: 1px;
+  }
+  .cl-item.done .cl-box { border-color: var(--accent); background: var(--accent); color: #050810; }
+
+  /* ── CONTACTS ── */
+  #contacts {
+    background: var(--bg);
+    text-align: center;
+  }
+  .contacts-sub { font-size: 16px; color: var(--muted); max-width: 500px; margin: 0 auto 48px; }
+  .contacts-grid {
+    display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;
+    max-width: 700px; margin: 0 auto;
+  }
+  .contact-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 24px; border: 1px solid var(--border); border-radius: 8px;
+    text-decoration: none; color: var(--text); font-family: var(--mono); font-size: 13px;
+    transition: all .25s; background: var(--card);
+  }
+  .contact-item:hover { border-color: var(--accent); color: var(--accent); }
+  .contact-icon { font-size: 20px; }
+  .contact-label { color: var(--muted); font-size: 11px; display: block; }
+  .contact-val { font-size: 13px; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 32px 6vw; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    flex-wrap: wrap; gap: 12px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; } 50% { opacity: 1; }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(32px);
+    transition: opacity .7s, transform .7s;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 14px 5vw; }
+    .nav-links { gap: 18px; }
+    .nav-links a { font-size: 10px; }
+    section { padding: 72px 5vw; }
+    .project-card { grid-template-columns: 1fr; direction: ltr !important; }
+    .project-card:nth-child(even) { direction: ltr; }
+    .proj-visual { min-height: 180px; }
+    .proj-info { padding: 32px 24px; }
+  }
+
+  @media (max-width: 480px) {
+    .nav-links { display: none; }
+    .hero-name { font-size: 36px; }
+    .btn { padding: 12px 22px; font-size: 12px; }
+    .proj-kpi { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-logo">shamany.dev</div>
+  <ul class="nav-links">
+    <li><a href="#analysis">Анализ</a></li>
+    <li><a href="#projects">Проекты</a></li>
+    <li><a href="#interactive">Инструменты</a></li>
+    <li><a href="#contacts">Контакты</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero">
+  <div class="hero-tag">// Python Developer · Backend · Databases</div>
+  <h1 class="hero-name">Шаманиди<br>Сергей</h1>
+  <p class="hero-role">backend_dev.py — студент СПК, 09.02.07 ИСП</p>
+  <p class="hero-desc">
+    Разрабатываю серверные приложения на Python: веб-сервисы Flask, работа с SQLite/SQLAlchemy,
+    парсинг данных, компьютерное зрение. Обучаюсь в Компьютерной Академии ТОП.
+  </p>
+  <div class="hero-cta">
+    <a href="#projects" class="btn btn-primary">Смотреть проекты</a>
+    <a href="#contacts" class="btn btn-ghost">Связаться</a>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    scroll
+  </div>
+</section>
+
+<!-- ── STEP 1: BEHANCE ANALYSIS ── -->
+<section id="analysis">
+  <div class="section-label">// шаг 1 — анализ платформы</div>
+  <h2 class="section-title reveal">3 успешных портфолио<br>на Behance в моей нише</h2>
+  <div class="analysis-grid">
+
+    <div class="analysis-card reveal">
+      <div class="card-num">01 / 03</div>
+      <div class="card-title">Landing resume of a back-end developer</div>
+      <div class="card-author">Автор: Fastflow IT</div>
+      <a class="card-link" href="https://www.behance.net/gallery/176212247/Portfolio-website-for-backend-developer" target="_blank">
+        behance.net/gallery/176212247/…
+      </a>
+      <div class="card-tags">
+        <span class="tag">Чёткая структура</span>
+        <span class="tag">Dark UI</span>
+        <span class="tag">Технический стек</span>
+      </div>
+      <ul class="card-body">
+        <li><b>Структура:</b> Hero → Skills → Projects → Contact — всё логично и предсказуемо, ничего лишнего.</li>
+        <li><b>Подача:</b> каждый проект описан блоком «задача – решение – результат», что сразу показывает ценность.</li>
+        <li><b>Стиль:</b> тёмный фон, монохромная типографика, акцентный синий — профессионально и читаемо.</li>
+        <li><b>Что взять:</b> минималистичный лейаут, чёткую иерархию секций, лаконичное описание стека.</li>
+      </ul>
+    </div>
+
+    <div class="analysis-card reveal">
+      <div class="card-num">02 / 03</div>
+      <div class="card-title">Creative Personal Portfolio — WaxyWeb</div>
+      <div class="card-author">Автор: WaxyWeb Studio</div>
+      <a class="card-link" href="https://www.behance.net/search/projects/backend%20developer?locale=en_US" target="_blank">
+        behance.net/search/projects/backend+developer
+      </a>
+      <div class="card-tags">
+        <span class="tag">Анимации</span>
+        <span class="tag">Кейсы</span>
+        <span class="tag">Интерактив</span>
+      </div>
+      <ul class="card-body">
+        <li><b>Структура:</b> развёрнутые кейсы с визуальным разбором — каждый проект как мини-стори.</li>
+        <li><b>Подача:</b> скриншоты интерфейсов и схемы архитектуры превращают код в «продукт».</li>
+        <li><b>Стиль:</b> смелые контрастные блоки, нестандартная сетка, плавные переходы — запоминается.</li>
+        <li><b>Что взять:</b> показывать не только код, но и результат через скрины и метрики.</li>
+      </ul>
+    </div>
+
+    <div class="analysis-card reveal">
+      <div class="card-num">03 / 03</div>
+      <div class="card-title">Full Stack E-Commerce Concept</div>
+      <div class="card-author">Автор: Ingroupp Studio</div>
+      <a class="card-link" href="https://www.behance.net/search/projects/developer%20portfolio?locale=en_US" target="_blank">
+        behance.net/search/projects/developer+portfolio
+      </a>
+      <div class="card-tags">
+        <span class="tag">KPI-метрики</span>
+        <span class="tag">Roadmap</span>
+        <span class="tag">Подробные кейсы</span>
+      </div>
+      <ul class="card-body">
+        <li><b>Структура:</b> проекты разбиты на задачу клиента, мои действия, результат и вывод — идеальная формула.</li>
+        <li><b>Подача:</b> числовые метрики (скорость, кол-во пользователей, кол-во строк) добавляют убедительности.</li>
+        <li><b>Стиль:</b> брутальные крупные заголовки + аккуратные карточки — баланс смелости и профессионализма.</li>
+        <li><b>Что взять:</b> конкретные числа в каждом проекте, блок «что я понял после» — честность подкупает.</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── STEP 2+3: PROJECTS ── -->
+<section id="projects">
+  <div class="section-label">// шаги 2 и 3 — три лучшие работы</div>
+  <h2 class="section-title reveal">Проекты</h2>
+  <div class="projects-list">
+
+    <!-- PROJECT 1 -->
+    <div class="project-card reveal">
+      <div class="proj-visual">
+        <div class="proj-icon">🎓</div>
+      </div>
+      <div class="proj-info">
+        <div class="proj-num">Проект 01 / 03</div>
+        <div class="proj-title">ИС для оценивания преподавателей</div>
+        <div class="proj-kpi">
+          <div class="kpi"><span class="kpi-val">50</span><span class="kpi-label">тестов pytest</span></div>
+          <div class="kpi"><span class="kpi-val">87%</span><span class="kpi-label">покрытие кода</span></div>
+          <div class="kpi"><span class="kpi-val">4</span><span class="kpi-label">HTML-шаблона</span></div>
+        </div>
+        <div class="proj-section">
+          <div class="proj-section-label">Задача клиента</div>
+          <div class="proj-section-text">
+            Колледж проводил оценку преподавателей через бумажные анкеты. Обработка одного потока занимала
+            2–3 рабочих дня, данные терялись, сравнение за разные семестры было невозможным.
+            Нужна была цифровая система, работающая с любого устройства через браузер.
+          </div>
+        </div>
+        <div class="proj-section">
+          <div class="proj-section-label">Мои действия</div>
+          <div class="proj-section-text">
+            Спроектировал MVC-архитектуру на Flask с разделением на app.py и database.py.
+            Реализовал динамическую схему БД: критерии оценивания добавляются через CSV без перезапуска сервера.
+            Написал адаптивный UI с Jinja2 и Fetch API для сохранения оценок без перезагрузки страницы.
+            Покрыл бизнес-логику 50 unit-тестами с pytest, настроил деплой на Render.com.
+          </div>
+        </div>
+        <div class="proj-section">
+          <div class="proj-section-label">Результат</div>
+          <div class="proj-section-text">
+            Время обработки результатов анкетирования сократилось с 2–3 дней до нескольких секунд.
+            Администратор получил панель с сортировкой, фильтрацией и управлением столбцами.
+            Система задеплоена и доступна 24/7 через HTTPS.
+          </div>
+        </div>
+        <div class="proj-stack">
+          <span class="stack-badge">Python</span>
+          <span class="stack-badge">Flask</span>
+          <span class="stack-badge">SQLite</span>
+          <span class="stack-badge">Jinja2</span>
+          <span class="stack-badge">pytest</span>
+          <span class="stack-badge">Render.com</span>
+        </div>
+        <div class="proj-insight">
+          💡 После проекта: важно выносить бизнес-логику в отдельный модуль с первого дня — это делает тестирование
+          в 10 раз проще и избавляет от «спагетти-кода» по мере роста функционала.
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECT 2 -->
+    <div class="project-card reveal">
+      <div class="proj-visual">
+        <div class="proj-icon">🗺️</div>
+      </div>
+      <div class="proj-info">
+        <div class="proj-num">Проект 02 / 03</div>
+        <div class="proj-title">Парсер и нормализатор адресов</div>
+        <div class="proj-kpi">
+          <div class="kpi"><span class="kpi-val">130+</span><span class="kpi-label">улиц в базе</span></div>
+          <div class="kpi"><span class="kpi-val">NLP</span><span class="kpi-label">биграммный поиск</span></div>
+          <div class="kpi"><span class="kpi-val">2</span><span class="kpi-label">таблицы SQLite</span></div>
+        </div>
+        <div class="proj-section">
+          <div class="proj-section-label">Задача клиента</div>
+          <div class="proj-section-text">
+            Организации поступали адреса в свободной форме: с опечатками, пропущенными словами,
+            смешением регистров. Нужно было автоматически разобрать адрес на компоненты
+            (город, посёлок, улица, дом, квартира) и записать исправленные данные в БД.
+          </div>
+        </div>
+        <div class="proj-section">
+          <div class="proj-section-label">Мои действия</div>
+          <div class="proj-section-text">
+            Реализовал трёхфазовый NLP-алгоритм на основе биграммного сравнения (коэффициент Жаккара).
+            Система собирает кандидатов для каждого компонента, затем выбирает лучшего по приоритету
+            (группа слов vs одиночное слово). Логика извлечения номера дома/квартиры обрабатывает
+            сложные случаи: «д.10/2, кв 45», «ул. Пушкина, 8 стр.1» и т.д.
+            Веб-интерфейс на Flask с просмотром таблиц T1 и T2.
+          </div>
+        </div>
+        <div class="proj-section">
+          <div class="proj-section-label">Результат</div>
+          <div class="proj-section-text">
+            Система корректно разбирает адреса с грамматическими ошибками и нестандартными сокращениями.
+            Точность определения улицы на тестовой выборке из 50 адресов — около 90%.
+            Данные сохраняются в нормализованном виде в SQLite с поддержкой каскадного удаления.
+          </div>
+        </div>
+        <div class="proj-stack">
+          <span class="stack-badge">Python</span>
+          <span class="stack-badge">Flask</span>
+          <span class="stack-badge">SQLite</span>
+          <span class="stack-badge">NLP (биграммы)</span>
+          <span class="stack-badge">regex</span>
+          <span class="stack-badge">flask-cors</span>
+        </div>
+        <div class="proj-insight">
+          💡 После проекта: нечёткий поиск — нетривиальная задача. Метрика Жаккара отлично работает
+          для коротких строк, но требует тонкой настройки порогов для каждой категории данных.
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECT 3 -->
+    <div class="project-card reveal">
+      <div class="proj-visual">
+        <div class="proj-icon">👁️</div>
+      </div>
+      <div class="proj-info">
+        <div class="proj-num">Проект 03 / 03</div>
+        <div class="proj-title">Детектор лиц (фото / видео / веб-камера)</div>
+        <div class="proj-kpi">
+          <div class="kpi"><span class="kpi-val">MTCNN</span><span class="kpi-label">нейросеть</span></div>
+          <div class="kpi"><span class="kpi-val">3</span><span class="kpi-label">режима работы</span></div>
+          <div class="kpi"><span class="kpi-val">160px</span><span class="kpi-label">лицо в кропе</span></div>
+        </div>
+        <div class="proj-section">
+          <div class="proj-section-label">Задача клиента</div>
+          <div class="proj-section-text">
+            Нужен инструмент для автоматического извлечения лиц из фотоархивов и видеозаписей.
+            Ручная обработка больших объёмов видео занимала часы работы. Требовался простой
+            GUI, работающий в том числе с веб-камерой в реальном времени.
+          </div>
+        </div>
+        <div class="proj-section">
+          <div class="proj-section-label">Мои действия</div>
+          <div class="proj-section-text">
+            Интегрировал нейросеть MTCNN (Multi-task Cascaded Convolutional Networks) для детекции лиц.
+            Реализовал три режима: изображение, видеофайл (кадр за кадром с таймстампом),
+            веб-камера (real-time с обновлением через Tkinter Canvas).
+            Для каждого обнаруженного лица создаётся кроп 160×160px с именем файла по уверенности (confidence).
+            GUI на tkinter с радиокнопками, вводом пути и кнопками управления камерой.
+          </div>
+        </div>
+        <div class="proj-section">
+          <div class="proj-section-label">Результат</div>
+          <div class="proj-section-text">
+            Программа обрабатывает фотографию за 1–3 секунды и видео — в зависимости от длины.
+            Все найденные лица сохраняются в структурированные папки с именем исходного файла.
+            Уверенность детекции от 0.90 и выше даёт качественные кропы без ложных срабатываний.
+          </div>
+        </div>
+        <div class="proj-stack">
+          <span class="stack-badge">Python</span>
+          <span class="stack-badge">OpenCV</span>
+          <span class="stack-badge">MTCNN</span>
+          <span class="stack-badge">TensorFlow</span>
+          <span class="stack-badge">Pillow</span>
+          <span class="stack-badge">tkinter</span>
+        </div>
+        <div class="proj-insight">
+          💡 После проекта: работа в реальном времени требует баланса между точностью и скоростью.
+          Уменьшение входного кадра ускоряет детекцию, но снижает точность для мелких лиц.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── STEP 4: INTERACTIVE ── -->
+<section id="interactive">
+  <div class="section-label">// шаг 4 — интерактивные элементы</div>
+  <h2 class="section-title reveal">Инструменты для клиента</h2>
+  <div class="interactive-grid">
+
+    <!-- QUIZ -->
+    <div class="inter-card reveal">
+      <div class="inter-icon">🎯</div>
+      <div class="inter-title">Квиз: какой пакет услуг вам подходит?</div>
+      <div class="inter-desc">Ответьте на 3 вопроса — я предложу оптимальный формат сотрудничества.</div>
+
+      <div id="quiz">
+        <div class="quiz-q">1. Что вам нужно разработать?</div>
+        <div class="quiz-opts">
+          <button class="quiz-opt" data-q="1" data-v="web">Веб-приложение / сайт</button>
+          <button class="quiz-opt" data-q="1" data-v="bot">Бот или автоматизацию</button>
+          <button class="quiz-opt" data-q="1" data-v="data">Парсинг / обработку данных</button>
+          <button class="quiz-opt" data-q="1" data-v="ai">ИИ / компьютерное зрение</button>
+        </div>
+        <div class="quiz-q" id="q2" style="display:none">2. Каков ваш бюджет?</div>
+        <div class="quiz-opts" id="q2-opts" style="display:none">
+          <button class="quiz-opt" data-q="2" data-v="small">До 10 000 ₽ (учебный / демо)</button>
+          <button class="quiz-opt" data-q="2" data-v="mid">10 000 – 40 000 ₽</button>
+          <button class="quiz-opt" data-q="2" data-v="big">40 000 ₽ и выше</button>
+        </div>
+        <div class="quiz-q" id="q3" style="display:none">3. Нужна ли поддержка после сдачи?</div>
+        <div class="quiz-opts" id="q3-opts" style="display:none">
+          <button class="quiz-opt" data-q="3" data-v="no">Нет, только разовая задача</button>
+          <button class="quiz-opt" data-q="3" data-v="yes">Да, хочу поддержку</button>
+        </div>
+        <div class="quiz-result" id="quiz-result"></div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="inter-card reveal">
+      <div class="inter-icon">✅</div>
+      <div class="inter-title">5 признаков хорошего ТЗ для разработчика</div>
+      <div class="inter-desc">Отметьте пункты, которые уже есть в вашем задании — и я пойму, насколько мы готовы к старту.</div>
+      <div id="checklist">
+        <div class="cl-item" onclick="toggleCl(this)">
+          <div class="cl-box"></div>
+          <span>Описана суть проекта и целевая аудитория (1–2 абзаца)</span>
+        </div>
+        <div class="cl-item" onclick="toggleCl(this)">
+          <div class="cl-box"></div>
+          <span>Перечислены конкретные функции (must have / nice to have)</span>
+        </div>
+        <div class="cl-item" onclick="toggleCl(this)">
+          <div class="cl-box"></div>
+          <span>Описаны роли пользователей и их права</span>
+        </div>
+        <div class="cl-item" onclick="toggleCl(this)">
+          <div class="cl-box"></div>
+          <span>Указаны технические ограничения или дано право выбора</span>
+        </div>
+        <div class="cl-item" onclick="toggleCl(this)">
+          <div class="cl-box"></div>
+          <span>Названы срок и бюджет (хотя бы вилка)</span>
+        </div>
+      </div>
+      <div id="cl-score" style="margin-top:16px; font-family: var(--mono); font-size:13px; color: var(--accent);"></div>
+    </div>
+
+    <!-- MINI-GUIDE DOWNLOAD -->
+    <div class="inter-card reveal">
+      <div class="inter-icon">📄</div>
+      <div class="inter-title">Мини-гайд: как написать ТЗ для разработчика</div>
+      <div class="inter-desc">
+        PDF-гайд на 2 страницы: 6 шагов, таблица ролей, чек-лист и пример описания проекта.
+        Помогает заказчикам сформулировать задачу чётко — и сэкономить бюджет.
+      </div>
+      <a href="mini_guide_tz.pdf" class="inter-action" download>
+        Скачать PDF →
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── CONTACTS ── -->
+<section id="contacts">
+  <div class="section-label">// контакты</div>
+  <h2 class="section-title reveal">Готов к новым задачам</h2>
+  <p class="contacts-sub reveal">
+    Напишите мне — обсудим проект, сроки и формат сотрудничества.
+    Отвечаю в течение суток.
+  </p>
+  <div class="contacts-grid reveal">
+    <a href="mailto:shamanidisergo@gmail.com" class="contact-item">
+      <span class="contact-icon">✉️</span>
+      <span>
+        <span class="contact-label">Email</span>
+        <span class="contact-val">shamanidisergo@gmail.com</span>
+      </span>
+    </a>
+    <a href="https://t.me/@bananidzi" class="contact-item" target="_blank">
+      <span class="contact-icon">💬</span>
+      <span>
+        <span class="contact-label">Telegram</span>
+        <span class="contact-val">@bananidzi</span>
+      </span>
+    </a>
+    <a href="https://github.com/SergeySPK" class="contact-item" target="_blank">
+      <span class="contact-icon">🐙</span>
+      <span>
+        <span class="contact-label">GitHub</span>
+        <span class="contact-val">github.com/SergeySPK</span>
+      </span>
+    </a>
+    <a href="https://vk.com/id462149562" class="contact-item" target="_blank">
+      <span class="contact-icon">🔷</span>
+      <span>
+        <span class="contact-label">ВКонтакте</span>
+        <span class="contact-val">vk.com/id462149562</span>
+      </span>
+    </a>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <span>© 2026 Шаманиди Сергей · Python Backend Developer</span>
+  <span>Сургут</span>
+</footer>
+
+<script>
+// ── Scroll reveal ──────────────────────────────────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── Quiz ──────────────────────────────────────────────────────────────────
+const answers = {};
+const results = {
+  web:  { small: 'Старт: небольшой Flask-сайт или лендинг с базовой логикой. Сроки 1–2 нед.', mid: 'Стандарт: полноценное веб-приложение с БД, авторизацией, административной панелью.', big: 'Премиум: сложная система с микросервисами, API, деплоем и поддержкой.' },
+  bot:  { small: 'Старт: простой Telegram-бот с командами и базовой логикой.', mid: 'Стандарт: бот с базой данных, рассылками и административным интерфейсом.', big: 'Премиум: интегрированная система бот + веб-панель управления + отчёты.' },
+  data: { small: 'Старт: скрипт парсинга с выгрузкой в CSV/Excel.', mid: 'Стандарт: парсер с очисткой данных, базой SQLite и простым веб-интерфейсом.', big: 'Премиум: полноценный ETL-пайплайн с регулярным запуском и дашбордом.' },
+  ai:   { small: 'Старт: готовая модель (MTCNN, YOLO) + простой GUI для демонстрации.', mid: 'Стандарт: детектор/классификатор с веб-интерфейсом и сохранением результатов.', big: 'Премиум: обучение собственной модели + деплой с REST API.' },
+};
+
+document.querySelectorAll('.quiz-opt').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const q = this.dataset.q;
+    const v = this.dataset.v;
+    document.querySelectorAll(`.quiz-opt[data-q="${q}"]`).forEach(b => b.classList.remove('selected'));
+    this.classList.add('selected');
+    answers[q] = v;
+
+    if (q === '1') {
+      document.getElementById('q2').style.display = '';
+      document.getElementById('q2-opts').style.display = '';
+    }
+    if (q === '2') {
+      document.getElementById('q3').style.display = '';
+      document.getElementById('q3-opts').style.display = '';
+    }
+    if (q === '3') {
+      const type = answers['1'] || 'web';
+      const budget = answers['2'] || 'mid';
+      const support = answers['3'] === 'yes' ? ' Рекомендую обсудить пакет поддержки (1–3 часа/мес).' : '';
+      const text = (results[type] || results.web)[budget] || '';
+      const el = document.getElementById('quiz-result');
+      el.innerHTML = `<b>Рекомендация:</b> ${text}${support}<br><br>
+        <a href="#contacts" style="color: var(--accent); font-family: var(--mono); font-size:12px;">Написать → обсудим детали</a>`;
+      el.style.display = 'block';
+    }
+  });
+});
+
+// ── Checklist ─────────────────────────────────────────────────────────────
+function toggleCl(el) {
+  el.classList.toggle('done');
+  const box = el.querySelector('.cl-box');
+  box.textContent = el.classList.contains('done') ? '✓' : '';
+  const done = document.querySelectorAll('#checklist .cl-item.done').length;
+  const total = document.querySelectorAll('#checklist .cl-item').length;
+  const score = document.getElementById('cl-score');
+  const msgs = ['', 'Начало есть — давайте дополним ТЗ вместе!', 'Неплохо — уже понятен контекст задачи.', 'Хороший фундамент для старта!', 'Почти идеально — можно сразу к оценке сроков.', '🎯 Отличное ТЗ! Можно приступать.'];
+  score.textContent = done > 0 ? `${done}/${total} — ${msgs[done] || ''}` : '';
+}
+</script>
+</body>
+</html>
